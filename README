@@ -1,0 +1,66 @@
+= Micro Framework
+
+Micro framework is a tiny framework for developing PHP applications. It follows the Push Model-View-Controller pattern. I use this framework in many projects. The documentation is still very limited.
+
+To set up a project using micro-framework you have to make a directory which contains the framework and several files and directories. http://github.com/StefanH/basic-template is an example of this structure.
+
+== Getting started
+
+* mkdir [project] and setup micro-framework directories and files
+* OR download http://github.com/StefanH/basic-template and rename it's folder to [project]
+
+* cp -R [micro-framework-dir]/* [project]/framework
+* OR ln -s [micro-framework-dir] [project]/framework
+
+* use [project]/config.php to configure url paths and database access.
+* make [project]/info.log writable from php.
+
+* configure access with [project]/.htaccess and [project]/public/.htaccess
+
+On windows: I have no idea
+
+== Routing
+All requests must be made to [project]/index.php. They are routed to a controller in [project]/controllers based on their url. For example, a request to [project]/index.php/static/index results in a call to the index method of a StaticController instance. A controller can use models in [project]/models to access a database. It can render a view from [project]/views/[controllername]/.
+
+== Controllers
+Controllers manage the sites functionality. They can access the database and/or render a view. see [micro-framework-dir]/controller.php for more information.
+
+== Views
+Views are simple php files that render the output to the browser. See [micro-framework-dir]/controller.php for more information.
+
+=== Layout
+When rendering a view, you can specify a layout file. These files are located in [project]/views/layout. When no layout is specified, [project]/views/layout/layout.php is used
+
+=== HTML Helpers for Forms, Tables and other stuff
+TODO
+
+== Models
+Models can be accessed in controller methods to query and manipulate the database. See /framework/model.php for more information.
+
+== Plugins
+Plugins contain additional controllers, models and views, as well as additional random functionality in the lib directory.
+
+== Autoloading
+All classes in the lib, models, controllers and framework directories are automatically loaded as needed. A class named HelloWorld must be in a file called hello_world.php otherwise it will not be found.
+
+== Log file
+TODO
+
+== Exception handling
+TODO
+
+== Controller callbacks
+TODO
+
+== Model callbacks
+TODO
+
+== Deploying
+before deploying an application built with this framework, you must do the following:
+
+ * make sure .htaccess is configured to deny clients direct access to anything accept index.php
+ * remove test and scripts directories
+
+Then it's simply a matter of copying the project folder's contents to a deployment location
+
+Copyright (c) 2009 Stefan Henzen, released under the MIT license
