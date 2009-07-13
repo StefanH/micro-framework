@@ -17,7 +17,7 @@ To set up a project using micro-framework you have to make a directory which con
 
 * configure access with [project]/.htaccess and [project]/public/.htaccess
 
-On windows: I have no idea
+On windows: I have no idea [please help]
 
 == Routing
 All requests must be made to [project]/index.php. They are routed to a controller in [project]/controllers based on their url. For example, a request to [project]/index.php/static/index results in a call to the index method of a StaticController instance. A controller can use models in [project]/models to access a database. It can render a view from [project]/views/[controllername]/.

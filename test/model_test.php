@@ -1,9 +1,4 @@
 <?
-
-class Test extends Model {
-  const table = 'test_table';
-}
-
 // a simple scenario
 log_info("###### test 1: see if table is empty");
 $result = find('Test');
@@ -16,7 +11,7 @@ $test2 = get("Test", $id);
 assert('!empty($test2)');
 
 log_info("###### test 3: attribute getters");
-assert('$test2->id() == $test2->attributes[\'id\']');
+assert('$test2->get_id() == $test2->attributes[\'id\']');
 
 log_info("###### test 4: update the object");
 $test2->update_attributes(array('name'=>'ha'));

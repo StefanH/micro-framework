@@ -1,5 +1,5 @@
 <?
-// core extensions
+######### core extensions
 function array_insert($array, $element, $position){
   if($position > count($array) || $position < 0)
     throw new Exception('insert out of bounds');
@@ -40,7 +40,23 @@ function array_accept($array){
 	return $result;
 }
 
-// framework-specific
+######### shortcuts for common tasks
+
+// retrieve a variable from each object in array
+function collection_get_property($array, $property){
+	$result = array();
+	foreach($array as $object) $result[] = $object->$property;
+	return $result;
+}
+
+// retrieve the result of a function call on each object in array
+function collection_get_result($array, $function){
+	$result = array();
+	foreach($array as $object) $result[] = $object->$function();
+	return $result;	
+}
+
+######### framework-specific
 function util_capitalize($string){
 	$elements = explode('_', $string);
 	$result = "";
@@ -81,7 +97,7 @@ function urlify($path, $params= array()){
   return URL_BASE.'/index.php'.$path.(empty($encoded)?'':'?').implode('&', $encoded);
 }
 
-// application level:
+######### application level:
 function log_info(){
   foreach(func_get_args() as $string){
     if(is_string($string))

@@ -4,6 +4,8 @@ require('config.php');
 require('utils.php');
 require('model_utils.php');
 require('html_utils.php');
+require('html_form_helpers.php');
+require('html_table_helpers.php');
 
 // autoloading of classes
 function __autoload($class_name) {

@@ -3,8 +3,14 @@ function find($model, $conditions = array(), $order=""){
   return Model::find($model, $conditions, $order);
 }
 
-function find_by_sql($model, $sql){
-  return Model::find_by_sql($model, $sql);
+function find_by_sql($sql){
+	$args = array_slice(func_get_args(), 1);
+  return Model::find_by_sql_array($sql, $args);
+}
+
+function find_by_sql_as_type($type, $sql){
+	$args = array_slice(func_get_args(), 2);
+  return Model::find_by_sql_as_type($type, $sql, $args);
 }
 
 function first($model, $conditions = null, $orderby = null) {

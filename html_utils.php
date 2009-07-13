@@ -7,13 +7,14 @@ function html_dl($items, $attributes=array()){
 }
 
 function html_input($name, $value, $attributes=array()){
-	$attributes['name'] = $name;
-	$attributes['value'] = $value;
+	$attributes = array_merge(
+		array('name' => $name, 'value' => $value), $attributes);
+
   return '<input type="text" '.xml_attributify($attributes).'>';
 }
 
 function html_password($name, $attributes=array()){
-	$attributes['name'] = $name;
+	$attributes = array_merge(array('name' => $name), $attributes);
   return '<input type="password" '.xml_attributify($attributes).'>';
 }
 
@@ -28,8 +29,15 @@ function html_select($name, $options, $selected=false, $attributes=array()){
     if($selected && $selected == $key) $option_attributes['selected'] = 'selected';
     $result[] = '<option '.xml_attributify($option_attributes).">$value</option>";
   }
-	$attributes['name'] = $name;
+	$attributes = array_merge(array('name' => $name), $attributes);
   return '<select '.xml_attributify($attributes).'>'.implode("\n", $result)."</select>";
+}
+
+function html_textarea($name, $value, $attributes = array()){
+	$attributes = array_merge(array(
+		'rows' => 10, 'cols'=>60, 'name'=> $name), $attributes);
+		
+	return '<textarea '.xml_attributify($attributes).'>'.$value.'</textarea>';
 }
 
 function html_span($content, $attributes=array()){
@@ -37,34 +45,43 @@ function html_span($content, $attributes=array()){
 }
 
 function html_form_open($url, $method='POST', $attributes=array()){
-	$attributes['action'] = $url;
-	$attributes['method'] = $method;
+	$attributes = array_merge(
+		array('action' => $url, 'method' => $method), $attributes);
 	return '<form '.xml_attributify($attributes).'>';
+}
+function html_label($for, $text, $attributes = array()){
+	$attributes = array_merge(
+		array('for' => $for), $attributes);
+	return '<label '.xml_attributify($attributes).'>'.$text.'</label> ';
 }
 
 function html_js_link($file, $attributes=array()){
 	if(substr($file, -3) != '.js') $file .= '.js';
-	$attributes['src'] = URL_BASE."/public/$file";
-	$attributes['type'] = 'text/javascript';
-	$attributes['charset'] = 'utf-8';
+	$attributes = array_merge(
+		array('src' => URL_BASE."/public/$file", 
+		'type' 			=> 'text/javascript',
+		'charset' 	=> 'utf-8'), $attributes);
+	
 	return '<script '.xml_attributify($attributes).'></script>';
 }
 
 function html_css_link($file, $attributes=array()){
 	if(substr($file, -4) != '.css') $file .= '.css';
-	$attributes['rel'] = "stylesheet"; 
-	$attributes['href'] = URL_BASE."/public/$file";
-	$attributes['type'] = "text/css";
+	$attributes = array_merge(array(
+		'rel' => "stylesheet",
+		'href' => URL_BASE."/public/$file",
+		'type' => "text/css"), $attributes);
+	
 	return '<link '.xml_attributify($attributes).'/>';
 }
 
 function linkify($text, $path, $params = array(), $attributes = array()){
-  return "<a href=\"".urlify($path, $params)."\" ".attributify($attributes).">$text</a>";
+  return "<a href=\"".urlify($path, $params)."\" ".xml_attributify($attributes).">$text</a>";
 }
 
 function iconify($icon, $attributes=array()){
   $path = URL_BASE."/public/icons/$icon.png";
-	$attributes['src'] = $path;
+	$attributes = array_merge(array('src' => $path), $attributes);
   return '<img '.xml_attributify($attributes).'/>';
 }
 

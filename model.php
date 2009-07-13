@@ -43,9 +43,21 @@ class Model extends MicroObject{
 		return self::get_results($resultset, $model);
 	}
 	
-	public static function find_by_sql($model, $sql){
-		$resultset = self::do_query($sql);
-		return self::get_results($resultset, $model);
+	public static function find_by_sql($sql){
+		$args = array_slice(func_get_args(), 1);
+		return self::get_results(self::find_by_sql_array($sql, $args), "Model");
+	}
+	
+	public static function find_by_sql_array($sql, $args = array()){
+		return self::find_by_sql_as_type('Model', $sql, $args);
+	}
+	
+	public static function find_by_sql_as_type($type, $sql, $args = array()){
+		if(!empty($args)){
+			foreach($args as $arg) 
+				$sql = preg_replace('/\?/', self::make_value($arg), $sql, 1);
+		}
+		return self::get_results(self::do_query($sql), $type);		
 	}
 	
 	function first($model, $conditions = null, $orderby = null) {
@@ -69,13 +81,19 @@ class Model extends MicroObject{
     return self::do_query("DELETE FROM " . $table . " WHERE " . $condition_string);	
 	}
 	
-	//get fields for a model
+	// empties a particular table
+	public static function truncate($model){
+		$table = self::table_for($model);
+		return self::do_query("TRUNCATE TABLE " . $table);	
+	}
+	
+	// get fields for a model
 	public static function fields($model){
 		$resultset = self::do_query("SHOW COLUMNS FROM " . self::table_for($model));
 		return self::get_results_array($resultset, 'Field');
 	}
 
-	//get fields for a model	
+	// get fields for a model	
 	public static function field_names($model){
 	  $fields = self::fields($model);
 	  return array_keys($fields);
@@ -118,31 +136,35 @@ class Model extends MicroObject{
 	
 	protected static function make_conditions($conditions){
 		$sql_conditions = array();
-		
+
 		foreach($conditions as $key => $value){
 		  if(is_array($value)){
-		    $values = array();
-		    foreach($value as $part) $values[] = self::make_value($part);
-		    $sql_conditions[] = "$key IN (".implode(",", $values).")";
+		    $sql_conditions[] = "$key IN ".self::make_value($value);
 		  } else {
 		    $matches = array();
-		    if (ereg("^(<|>|>=|<=|LIKE) ", $value, $matches))
-		      $sql_conditions[] = "$key ".reset($matches)." ".
-						self::make_value(substr($value, strlen(reset($matches))));
-		    else $sql_conditions[] = "$key =" . self::make_value($value);
+		    if (is_string($value) && ereg("^(<>|!=|<|>|>=|<=|LIKE) ", $value, $matches))
+		      $sql_conditions[] = "$key ".$matches[0].self::make_value(substr($value, strlen($matches[0])));
+		    else $sql_conditions[] = "$key = " . self::make_value($value);
 	    }
 		}
-		
+
 		return join(" AND ", $sql_conditions);
 	}
 		
 	protected static function make_value($value){
+		if(is_array($value)){
+			$parts = array();
+			foreach($value as $part) $parts[] = self::make_value($part);
+			return "(".implode(', ', $parts).")";
+		} else if (is_a($value, 'Model')) 
+			return $value->get_id();
+			
 		return "'" . Framework::$db->escape_string($value) . "'";
 	}
 	
 	private static function table_for($model){
 	  $reflect = new ReflectionClass($model);
-		return $reflect->getConstant('table');
+		return $reflect->getStaticPropertyValue('table');
 	}
 	
 	public $attributes = array();
@@ -182,11 +204,11 @@ class Model extends MicroObject{
 		
 		//insert or update
 		if (isset($this->attributes['id'])){
-			$this->dbupdate($datavalues, $this->id());
+			$this->dbupdate($datavalues, $this->get_id());
 			$result = true;
 		} else {
 			$result = $this->dbinsert($datavalues);
-			$this->attributes['id'] = $result;
+			$this->set_id($result);
 		}
 		$this->do_callback("after_save");
 
@@ -216,11 +238,19 @@ class Model extends MicroObject{
 	//-----------------------------------------
 	// metaprogramming
 	//-----------------------------------------
-	function __call($name, $arguments){
-		if(empty($arguments) && isset($this->attributes[$name])) return $this->attributes[$name];
-		else throw new ErrorException('Call to undefined function');
-	}
 	
+	//get/set attributes
+	public function __call($name, $arguments){
+		$parts = explode('_', $name);
+		if(count($parts) > 1){
+			if($parts[0] == 'get' && count($arguments == 0)) 
+				return $this->attributes[implode('_', array_slice($parts, 1))];
+			else if($parts[0] == 'set' && count($arguments == 1))	
+				$this->attributes[implode('_', array_slice($parts, 1))] = $arguments[0];
+			else throw new Exception('undefined method or wrong number of arguments');
+		} else throw new Exception('undefined method');
+	}
+
 	//-----------------------------------------
 	//validation
 	//-----------------------------------------
@@ -242,8 +272,6 @@ class Model extends MicroObject{
 			$this->errors[$field] = "This field should be longer than " . $length;
 		}
 	}
-	
-	
 				
 }
 
